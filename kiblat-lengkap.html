@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arah Kiblat</title>
+<style>
+:root{--bg:#f6f4ee;--card:#fff;--ink:#1d2b24;--mute:#66746c;--accent:#0f7a55;--gold:#c28a1e;--line:#e2ded2;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1612;--card:#17221c;--ink:#e8efe9;--mute:#93a39a;--accent:#3fcf9b;--gold:#e5b44a;--line:#263329;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+main{max-width:980px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.7rem;margin:8px 0 2px;text-align:center}
+.sub{color:var(--mute);text-align:center;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px}
+.center{text-align:center}
+.deg{font-size:2.6rem;font-weight:700;color:var(--accent);line-height:1.1}
+.mute{color:var(--mute);font-size:.9rem}
+.compass{width:100%;max-width:340px;margin:10px auto 0;display:block}
+.status{text-align:center;min-height:1.6em;font-weight:600;margin-top:8px}
+.ok{color:var(--accent)}
+.row{display:flex;gap:10px}
+.row>div{flex:1}
+label{font-size:.8rem;color:var(--mute);display:block;margin-bottom:4px}
+input,select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-size:1rem}
+input[type=range]{padding:0}
+button{width:100%;padding:12px;border:0;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;margin-top:10px}
+button.alt{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.info{display:flex;justify-content:space-between;gap:10px;font-size:.92rem;padding:7px 0;border-bottom:1px dashed var(--line)}
+.info:last-child{border:0}
+.note{color:var(--mute);font-size:.8rem;margin-top:8px}
+.badge{display:inline-block;font-size:.72rem;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mute)}
+.badge.good{color:var(--accent);border-color:var(--accent)}
+#needle{transition:transform .15s linear}
+h2{font-size:1.05rem;margin:0 0 8px}
+.times{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.times div{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center}
+.times b{display:block;font-size:1.1rem;color:var(--accent)}
+.times span{font-size:.75rem;color:var(--mute)}
+</style>
+</head>
+<body>
+<main>
+<h1>🕋 Arah Kiblat</h1>
+<p class="sub">Hitung arah ke Ka’bah dan jadwal salat dari lokasi Anda</p>
+
+<div class="grid">
+  <div>
+    <div class="card center">
+      <div class="deg" id="deg">--°</div>
+      <div class="mute" id="dir">dari utara sejati, searah jarum jam</div>
+      <svg class="compass" viewBox="-160 -160 320 320" role="img" aria-label="Kompas kiblat">
+        <g id="dial">
+          <circle r="150" fill="none" stroke="var(--line)" stroke-width="2"/>
+          <circle r="120" fill="none" stroke="var(--line)" stroke-width="1"/>
+          <g id="ticks" stroke="var(--mute)"></g>
+          <text y="-124" text-anchor="middle" font-size="18" font-weight="700" fill="var(--accent)">U</text>
+          <text x="124" y="6" text-anchor="middle" font-size="14" fill="var(--mute)">T</text>
+          <text y="136" text-anchor="middle" font-size="14" fill="var(--mute)">S</text>
+          <text x="-124" y="6" text-anchor="middle" font-size="14" fill="var(--mute)">B</text>
+        </g>
+        <g id="needle">
+          <polygon points="0,-110 11,0 -11,0" fill="var(--gold)"/>
+          <polygon points="0,60 11,0 -11,0" fill="var(--line)"/>
+          <circle r="7" fill="var(--card)" stroke="var(--gold)" stroke-width="3"/>
+          <text y="-118" text-anchor="middle" font-size="20">🕋</text>
+        </g>
+      </svg>
+      <div class="status" id="status"></div>
+
+      <div style="margin-top:12px;text-align:left">
+        <label for="hdg">Arah hadap perangkat (geser untuk simulasi di laptop): <b id="hdgv">0°</b></label>
+        <input id="hdg" type="range" min="0" max="359" value="0">
+      </div>
+      <button class="alt" id="btnCompass">Aktifkan sensor kompas (ponsel/tablet)</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Lokasi</h2>
+      <label for="search">Cari kota atau alamat</label>
+      <div class="row">
+        <div style="flex:3"><input id="search" type="text" placeholder="Contoh: Tasikmalaya"></div>
+        <div style="flex:1"><button id="btnSearch" style="margin-top:0;padding:10px">Cari</button></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div><label for="lat">Lintang</label><input id="lat" type="number" step="any" value="-6.2088"></div>
+        <div><label for="lon">Bujur</label><input id="lon" type="number" step="any" value="106.8456"></div>
+      </div>
+      <button id="btnGeo">📍 Gunakan lokasi saya</button>
+      <button class="alt" id="btnCalc">Hitung dari koordinat</button>
+      <div class="note" id="locNote">Contoh awal: Jakarta.</div>
+    </div>
+
+    <div class="card">
+      <h2>Hasil</h2>
+      <div class="info"><span>Hitungan lokal (cadangan)</span><b id="i1">-</b></div>
+      <div class="info"><span>API Aladhan (utama) <span class="badge" id="apiBadge">menunggu</span></span><b id="i2">-</b></div>
+      <div class="info"><span>Jarak ke Ka’bah</span><b id="i3">-</b></div>
+      <div class="info"><span>Koordinat Ka’bah</span><b>21.4225, 39.8262</b></div>
+    </div>
+
+    <div class="card">
+      <h2>Jadwal salat hari ini</h2>
+      <div class="mute" id="ptMeta">Metode Kemenag RI via API Aladhan.</div>
+      <div class="times" id="times"></div>
+    </div>
+  </div>
+</div>
+
+<p class="note center">Arah kiblat utama diambil dari API Aladhan (aladhan.com). Hitungan lokal dengan rumus lingkaran besar hanya menjadi cadangan saat API tidak bisa dihubungi. Jadwal salat juga dari Aladhan. Kompas ponsel bisa meleset beberapa derajat karena deklinasi magnet dan benda logam.</p>
+</main>
+
+<script>
+/* ===== Konfigurasi ===== */
+const KAABA = { lat: 21.4225, lon: 39.8262 };
+const ALADHAN = "https://api.aladhan.com/v1";
+const NOMINATIM = "https://nominatim.openstreetmap.org/search";
+const METODE_SALAT = 20; // 20 = Kementerian Agama RI
+
+const $ = id => document.getElementById(id);
+const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+let qibla = null, heading = 0, sensorAktif = false, reqId = 0;
+
+/* ===== Skala kompas ===== */
+(function () {
+  let s = "";
+  for (let i = 0; i < 360; i += 10) {
+    const l = i % 90 === 0 ? 0 : (i % 30 === 0 ? 10 : 5);
+    s += '<line x1="0" y1="-150" x2="0" y2="' + (-150 + l + 6) + '" transform="rotate(' + i + ')" stroke-width="' + (i % 30 === 0 ? 2 : 1) + '"/>';
+  }
+  $("ticks").innerHTML = s;
+})();
+
+/* ===== Perhitungan lokal ===== */
+function hitung(lat, lon) {
+  const p1 = rad(lat), p2 = rad(KAABA.lat), dl = rad(KAABA.lon - lon);
+  const y = Math.sin(dl) * Math.cos(p2);
+  const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl);
+  const b = (deg(Math.atan2(y, x)) + 360) % 360;
+  const a = Math.sin(rad(KAABA.lat - lat) / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2;
+  const km = 2 * 6371 * Math.asin(Math.min(1, Math.sqrt(a)));
+  return { b, km };
+}
+function namaArah(b) {
+  return ["Utara", "Timur Laut", "Timur", "Tenggara", "Selatan", "Barat Daya", "Barat", "Barat Laut"][Math.round(b / 45) % 8];
+}
+
+/* ===== Tampilan kompas ===== */
+function render() {
+  if (qibla === null) return;
+  $("dial").setAttribute("transform", "rotate(" + (-heading) + ")");
+  $("needle").setAttribute("transform", "rotate(" + (qibla - heading) + ")");
+  const d = ((qibla - heading + 540) % 360) - 180;
+  const el = $("status");
+  if (Math.abs(d) <= 3) { el.textContent = "✅ Anda sudah menghadap kiblat"; el.className = "status ok"; }
+  else { el.textContent = "Putar perangkat " + Math.abs(Math.round(d)) + "° ke " + (d > 0 ? "kanan" : "kiri"); el.className = "status"; }
+}
+
+/* Tampilkan arah kiblat utama di angka dan kompas */
+function tampilkan(b, sumber) {
+  qibla = b;
+  $("deg").textContent = b.toFixed(2) + "°";
+  $("dir").textContent = namaArah(b) + " · dari utara sejati · sumber: " + sumber;
+  render();
+}
+
+/* ===== Alur utama ===== */
+function perbarui(lat, lon) {
+  if (isNaN(lat) || isNaN(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+    $("locNote").textContent = "Koordinat tidak valid. Lintang −90 sampai 90, bujur −180 sampai 180.";
+    return;
+  }
+  const r = hitung(lat, lon);
+  $("i1").textContent = r.b.toFixed(2) + "° (" + namaArah(r.b) + ")";
+  $("i3").textContent = Math.round(r.km).toLocaleString("id-ID") + " km";
+  tampilkan(r.b, "hitungan lokal sementara");
+  ambilKiblatAPI(lat, lon, r.b);
+  ambilJadwal(lat, lon);
+}
+
+/* ===== API Aladhan: arah kiblat ===== */
+async function ambilKiblatAPI(lat, lon, lokal) {
+  const id = ++reqId;
+  const badge = $("apiBadge");
+  badge.textContent = "memuat"; badge.className = "badge";
+  try {
+    const res = await fetch(ALADHAN + "/qibla/" + lat + "/" + lon);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const j = await res.json();
+    if (id !== reqId) return;
+    const d = Number(j.data.direction);
+    if (isNaN(d)) throw new Error("Data tidak valid");
+    const selisih = Math.abs(((d - lokal + 540) % 360) - 180);
+    $("i2").textContent = d.toFixed(2) + "° (selisih " + selisih.toFixed(2) + "°)";
+    badge.textContent = "terhubung"; badge.className = "badge good";
+    tampilkan(d, "Aladhan");
+  } catch (e) {
+    if (id !== reqId) return;
+    $("i2").textContent = "tidak tersedia";
+    badge.textContent = "offline"; badge.className = "badge";
+    tampilkan(lokal, "hitungan lokal (API tidak tersedia)");
+  }
+}
+
+/* ===== API Aladhan: jadwal salat ===== */
+async function ambilJadwal(lat, lon) {
+  const box = $("times");
+  box.innerHTML = "";
+  try {
+    const t = Math.floor(Date.now() / 1000);
+    const res = await fetch(ALADHAN + "/timings/" + t + "?latitude=" + lat + "&longitude=" + lon + "&method=" + METODE_SALAT);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const j = await res.json();
+    const tm = j.data.timings;
+    const daftar = [["Subuh", "Fajr"], ["Terbit", "Sunrise"], ["Zuhur", "Dhuhr"], ["Asar", "Asr"], ["Magrib", "Maghrib"], ["Isya", "Isha"]];
+    box.innerHTML = daftar.map(function (x) {
+      return "<div><span>" + x[0] + "</span><b>" + String(tm[x[1]]).slice(0, 5) + "</b></div>";
+    }).join("");
+    $("ptMeta").textContent = j.data.date.readable + " · zona waktu " + j.data.meta.timezone + " · metode Kemenag RI";
+  } catch (e) {
+    $("ptMeta").textContent = "Jadwal salat tidak dapat dimuat (periksa koneksi internet).";
+  }
+}
+
+/* ===== API Nominatim: cari kota ===== */
+async function cariLokasi() {
+  const q = $("search").value.trim();
+  if (!q) return;
+  $("locNote").textContent = "Mencari…";
+  try {
+    const res = await fetch(NOMINATIM + "?format=json&limit=1&accept-language=id&q=" + encodeURIComponent(q));
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const j = await res.json();
+    if (!j.length) { $("locNote").textContent = "Lokasi tidak ditemukan."; return; }
+    const lat = parseFloat(j[0].lat), lon = parseFloat(j[0].lon);
+    $("lat").value = lat.toFixed(5);
+    $("lon").value = lon.toFixed(5);
+    $("locNote").textContent = j[0].display_name;
+    perbarui(lat, lon);
+  } catch (e) {
+    $("locNote").textContent = "Pencarian gagal. Isi koordinat secara manual.";
+  }
+}
+
+/* ===== Geolokasi ===== */
+function lokasiSaya() {
+  if (!navigator.geolocation) { $("locNote").textContent = "Browser tidak mendukung geolokasi."; return; }
+  $("locNote").textContent = "Mencari lokasi…";
+  navigator.geolocation.getCurrentPosition(function (p) {
+    $("lat").value = p.coords.latitude.toFixed(5);
+    $("lon").value = p.coords.longitude.toFixed(5);
+    $("locNote").textContent = "Lokasi ditemukan (akurasi ±" + Math.round(p.coords.accuracy) + " m).";
+    perbarui(p.coords.latitude, p.coords.longitude);
+  }, function () {
+    $("locNote").textContent = "Lokasi tidak bisa diakses. Gunakan pencarian kota atau isi koordinat manual.";
+  }, { enableHighAccuracy: true, timeout: 15000 });
+}
+
+/* ===== Sensor kompas (ponsel/tablet) ===== */
+function onOrient(e) {
+  let h = null;
+  if (typeof e.webkitCompassHeading === "number") h = e.webkitCompassHeading;
+  else if (e.alpha != null && (e.absolute || e.type === "deviceorientationabsolute")) h = (360 - e.alpha) % 360;
+  if (h !== null) { heading = h; $("hdg").value = Math.round(h); $("hdgv").textContent = Math.round(h) + "°"; render(); }
+}
+async function aktifkanSensor() {
+  try {
+    if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+      const r = await DeviceOrientationEvent.requestPermission();
+      if (r !== "granted") { $("status").textContent = "Izin sensor ditolak."; return; }
+    }
+    window.addEventListener("deviceorientationabsolute", onOrient, true);
+    window.addEventListener("deviceorientation", onOrient, true);
+    sensorAktif = true;
+    $("btnCompass").style.display = "none";
+  } catch (e) {
+    $("status").textContent = "Sensor kompas tidak tersedia di perangkat ini.";
+  }
+}
+
+/* ===== Event ===== */
+$("btnCalc").onclick = function () { perbarui(parseFloat($("lat").value), parseFloat($("lon").value)); };
+$("btnGeo").onclick = lokasiSaya;
+$("btnSearch").onclick = cariLokasi;
+$("search").addEventListener("keydown", function (e) { if (e.key === "Enter") cariLokasi(); });
+$("btnCompass").onclick = aktifkanSensor;
+$("hdg").addEventListener("input", function () {
+  heading = parseFloat(this.value);
+  $("hdgv").textContent = Math.round(heading) + "°";
+  render();
+});
+
+perbarui(-6.2088, 106.8456);
+</script>
+</body>
+</html>
